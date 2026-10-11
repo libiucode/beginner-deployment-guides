@@ -1,0 +1,195 @@
+{% extends 'gift/base.html' %}
+{% block title %}
+X · 运营工作台
+{% endblock %}
+{% block content %}
+<div class="page-title">
+<div>
+<p class="eyebrow">OPERATIONS</p>
+<h1>运营工作台</h1>
+<p class="muted">批次交付、客户查询与订单概览</p>
+</div>
+<div class="actions">
+<a class="link-button" href="/admin/">套餐与敏感配置 ↗</a>
+{% if perms.gift.change_order %}<a class="link-button" href="/operator/recovery/">人工补单与历史 ↗</a>{% endif %}
+</div>
+</div>
+{% for message in messages %}
+<p class="notice" role="status">{{ message }}</p>
+{% endfor %}
+<div class="metrics">
+<article>
+<p>兑换码总数</p>
+<strong>{{ total_codes }}</strong>
+</article>
+<article>
+<p>订单总数</p>
+<strong>{{ total_orders }}</strong>
+</article>
+<article>
+<p>成功交付</p>
+<strong>{{ successes }}</strong>
+</article>
+<article>
+<p>运行模式</p>
+<strong>
+{% if mode == 'live' %}
+真实
+{% else %}
+模拟
+{% endif %}
+</strong>
+</article>
+</div>
+<div class="two-columns">
+<section class="card compact">
+<h2>生成兑换码</h2>
+<form method="post">{% csrf_token %}<input type="hidden" name="action" value="generate">
+<label>套餐<select name="plan" required>
+{% for plan in plans %}
+<option value="{{ plan.pk }}">{{ plan.name }} · {{ plan.months }} 个月</option>
+{% empty %}
+<option value="">请先添加启用套餐</option>
+{% endfor %}
+</select>
+</label>
+<div class="inline">
+<label>数量<input name="count" type="number" min="1" max="1000" value="10" required>
+</label>
+<label>批次<select name="folder">
+<option value="">未分组</option>
+{% for folder in folders %}
+<option value="{{ folder.pk }}">{{ folder.name }}</option>
+{% endfor %}
+</select>
+</label>
+</div>
+<button>生成并加密保存 →</button>
+</form>
+</section>
+<section class="card compact">
+<h2>建立交付批次</h2>
+<form method="post">{% csrf_token %}<input type="hidden" name="action" value="folder">
+<label>批次名称<input name="name" maxlength="120" placeholder="例如：十月客户交付" required>
+</label>
+<button>创建批次 →</button>
+</form>
+<p class="hint">生成后请按批次导出，妥善保管完整兑换码。导出与批次操作均有记录。</p>
+<p class="muted">订单分布：
+{% for stat in stats %}
+{{ stat.status }} {{ stat.count }} ·
+{% empty %}
+暂无订单
+{% endfor %}
+</p>
+</section>
+</div>
+<section class="card wide">
+<div class="section-heading">
+<h2>兑换码与批次</h2>
+{% if perms.gift.export_code %}
+<form method="post" action="/operator/export">{% csrf_token %}<input type="hidden" name="folder" value="{{ folder_id }}">
+<button>导出当前批次 CSV ↓</button>
+</form>
+{% endif %}
+</div>
+<form method="get" class="filters">
+<input name="q" value="{{ query }}" placeholder="用户名或订单号">
+<select name="folder">
+<option value="">全部批次</option>
+{% for folder in folders %}
+<option value="{{ folder.pk }}"
+{% if folder_id == folder.pk|stringformat:'s' %}
+selected
+{% endif %}
+>{{ folder.name }}</option>
+{% endfor %}
+</select>
+<button>查询</button>
+</form>
+<form method="post" class="filters">{% csrf_token %}<input type="hidden" name="action" value="lookup">
+<input name="code" maxlength="128" type="password" placeholder="安全查询完整兑换码" autocomplete="off">
+<button>查询兑换码</button>
+</form>
+<form method="post">{% csrf_token %}<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>选择</th>
+<th>编号</th>
+<th>套餐</th>
+<th>批次</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+{% for code in codes %}
+<tr>
+<td>
+<input aria-label="选择兑换码 {{ code.pk }}" type="checkbox" name="codes" value="{{ code.pk }}">
+</td>
+<td>#{{ code.pk }}</td>
+<td>{{ code.plan.name }}</td>
+<td>{{ code.folder.name|default:'未分组' }}</td>
+<td>
+{% if code.enabled %}
+可用
+{% else %}
+已停用
+{% endif %}
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="5" class="empty">没有符合条件的兑换码</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+<div class="filters">
+<select name="folder">
+<option value="">未分组</option>
+{% for folder in folders %}
+<option value="{{ folder.pk }}">{{ folder.name }}</option>
+{% endfor %}
+</select>
+<button name="action" value="move">移动所选</button>
+<button class="danger" name="action" value="revoke">停用所选</button>
+</div>
+</form>
+<p class="hint">最多显示最新 200 条；完整兑换码仅在授权详情或导出中可见。</p>
+</section>
+<section class="card wide">
+<h2>客户与订单</h2>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>客户</th>
+<th>订单</th>
+<th>状态</th>
+<th>创建时间</th>
+</tr>
+</thead>
+<tbody>
+{% for order in orders %}
+<tr>
+<td>@{{ order.username }}</td>
+<td>
+<a href="/admin/gift/order/{{ order.pk }}/change/">{{ order.pk }}</a>
+</td>
+<td>{{ order.get_status_display }} · {% if order.mode == 'live' %}真实{% else %}模拟{% endif %}</td>
+<td>{{ order.created_at|date:'m-d H:i' }}</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="4" class="empty">暂无订单</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+<p class="hint">最多显示最新 100 条，可使用上方查询定位客户。</p>
+</section>
+{% endblock %}

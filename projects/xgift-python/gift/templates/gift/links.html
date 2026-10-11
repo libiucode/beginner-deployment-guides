@@ -1,0 +1,19 @@
+{% extends 'gift/base.html' %}
+{% block content %}
+<section class="card"><h1>申请付款链接</h1><p>先排队核验，再生成链接。本站不会为公开申请自动付款。队列开始前可以取消。</p>
+<form id="request-link">{% csrf_token %}<label>X 用户名<input name="username" maxlength="15" required></label>
+<label>套餐<select name="plan">{% for plan in plans %}<option value="{{ plan.pk }}">{{ plan.name }} · {{ plan.currency }} {{ plan.amount_minor }} 最小货币单位</option>{% endfor %}</select></label><button>申请并排队</button></form>
+<p id="status" role="status"></p><a id="payment" hidden rel="noreferrer noopener" target="_blank">打开付款链接 ↗</a>
+<button id="refresh" type="button" hidden>查询进度</button><button id="cancel" type="button" hidden>取消排队</button>
+<button id="reconcile" type="button" hidden>我已付款，核实原会话</button>
+<p class="hint">请保留此浏览器页面。模拟链接仅演示，不可付款；真实付款完成后需人工核实原会话，本站不会重复扣款。</p></section>
+{% endblock %}
+{% block scripts %}<script>
+const form=document.querySelector('#request-link'), status=document.querySelector('#status');
+let ticket=JSON.parse(sessionStorage.getItem('xgift-link')||'null');
+const csrf=form.querySelector('[name=csrfmiddlewaretoken]').value;
+async function query(cancel=false){if(!ticket)return;const response=await fetch('/api/links/'+ticket.id+(cancel?'/cancel':''),{method:cancel?'POST':'GET',headers:{Authorization:'Bearer '+ticket.access_token,'X-CSRFToken':csrf}});const data=await response.json();status.textContent=data.error||data.status_label||'已取消';const link=document.querySelector('#payment');link.hidden=!data.payment_url;if(data.payment_url)link.href=data.payment_url;document.querySelector('#cancel').hidden=data.status!=='queued';document.querySelector('#refresh').hidden=false;}
+form.addEventListener('submit',async event=>{event.preventDefault();const response=await fetch('/api/links',{method:'POST',body:new FormData(form)});const data=await response.json();if(!response.ok){status.textContent=data.error;return;}ticket=data;sessionStorage.setItem('xgift-link',JSON.stringify(ticket));document.querySelector('#reconcile').hidden=false;await query();});
+document.querySelector('#refresh').onclick=()=>query();document.querySelector('#cancel').onclick=()=>query(true);
+document.querySelector('#reconcile').hidden=!ticket;document.querySelector('#reconcile').onclick=async()=>{if(!ticket)return;const response=await fetch('/api/links/'+ticket.id+'/reconcile',{method:'POST',headers:{Authorization:'Bearer '+ticket.access_token,'X-CSRFToken':csrf}});const data=await response.json();status.textContent=data.error||data.message;};if(ticket)query();
+</script>{% endblock %}

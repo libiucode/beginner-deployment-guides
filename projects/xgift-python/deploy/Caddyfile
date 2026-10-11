@@ -1,0 +1,7 @@
+# Replace hostname; Caddy must be the only access path to loopback:8000.
+gift.example.com {
+    reverse_proxy 127.0.0.1:8000 {
+        header_up X-XGift-Client-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

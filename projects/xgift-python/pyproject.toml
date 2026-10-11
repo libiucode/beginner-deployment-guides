@@ -1,0 +1,20 @@
+[project]
+name = "xgift-python"
+version = "0.1.0"
+description = "XGift Python 兑换站点"
+requires-python = ">=3.12"
+dependencies = [
+    "Django>=6.0,<6.1",
+    "cryptography>=46,<49",
+    "httpx[socks]>=0.28,<0.29",
+    "pywin32>=311 ; sys_platform == 'win32'",
+    "waitress>=3,<4",
+    "whitenoise>=6.9,<7",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-django>=4.11,<5"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["."]

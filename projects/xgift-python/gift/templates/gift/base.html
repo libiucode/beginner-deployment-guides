@@ -1,0 +1,40 @@
+{% load static %}<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f7f9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0e0d" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2314171a%27/%3E%3Ctext x=%2716%27 y=%2723%27 text-anchor=%27middle%27 font-size=%2721%27 font-weight=%27bold%27 fill=%27white%27%3EX%3C/text%3E%3C/svg%3E">
+<title>{% block title %}X · Premium Gifts{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'gift/site.css' %}">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+<header>
+<div class="bar">
+<a class="brand" href="/">
+<span class="mark" aria-hidden="true">X</span>
+<span>Premium Gifts</span>
+<small>Gifting</small>
+</a>
+<nav aria-label="主导航">
+<a href="/links/">付款链接</a>
+<span class="badge">{% if mode == 'live' %}真实兑换{% else %}模拟演示{% endif %}</span>
+<a href="/operator/">管理中心 ↗</a>
+</nav>
+</div>
+</header>
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+<footer>
+<div class="bar">
+<span>X · Premium Gifts｜为每一份心意，认真交付</span>
+<span>安全兑换 · 进度可查</span>
+</div>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

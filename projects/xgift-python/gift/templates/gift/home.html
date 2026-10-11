@@ -1,0 +1,52 @@
+{% extends 'gift/base.html' %}{% load static %}
+{% block content %}
+<section class="hero">
+<div>
+<p class="eyebrow">A LITTLE GIFT. A BIGGER WORLD.</p>
+<h1>让每一份心意<br>都有<span>更好的表达。</span>
+</h1>
+<p class="lead">使用兑换码，为你的 X 账号开启 Premium 礼遇。<br>只需两步，剩下的交给我们。</p>
+<div class="steps">
+<span>
+<b>01</b> 填写兑换信息</span>
+<span>
+<b>02</b> 查看交付进度</span>
+</div>
+<aside>
+{% if mode == 'simulated' %}
+<strong>当前为模拟演示</strong>
+<p>可体验兑换与进度查询，不会进行真实赠送或扣款。</p>
+{% else %}
+<strong>当前为真实兑换</strong>
+<p>请确认账号与兑换码。赠送前将核验资格；遇到待核实状态，请联系运营人员。</p>
+{% endif %}
+</aside>
+</div>
+<section class="card">
+<p class="eyebrow">REDEEM YOUR GIFT</p>
+<h2>开启你的 Premium</h2>
+<p class="muted">请填写你收到的兑换码与 X 用户名</p>
+<form id="redeem" novalidate>{% csrf_token %}
+<label for="code">兑换码</label>
+<textarea id="code" name="code" rows="2" maxlength="128" placeholder="粘贴完整兑换码" aria-describedby="code-error" required></textarea>
+<p class="error" id="code-error" role="alert"></p>
+<label for="username">X 用户名</label>
+<input id="username" name="username" maxlength="16" placeholder="@your_username" autocomplete="off" spellcheck="false" aria-describedby="username-error" required>
+<p class="error" id="username-error" role="alert"></p>
+<p class="hint">请使用用户名，而非昵称。兑换后账号将与此兑换码绑定。</p>
+<button id="submit" type="submit">确认兑换 <span aria-hidden="true">→</span></button>
+<p class="hint">再次输入相同兑换码与用户名，可查询已有订单。</p>
+</form>
+<section id="result" hidden aria-live="polite">
+<h3 id="status">正在查询…</h3>
+<p id="detail"></p>
+<p class="muted" id="status-note"></p>
+<button type="button" id="refresh">刷新进度</button>
+</section>
+</section>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'gift/public.js' %}" defer>
+</script>
+{% endblock %}

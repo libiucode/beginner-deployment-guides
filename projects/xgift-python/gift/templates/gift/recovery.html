@@ -1,0 +1,12 @@
+{% extends 'gift/base.html' %}
+{% block content %}<h1>人工补单</h1>{% for message in messages %}<p class="notice">{{ message }}</p>{% endfor %}
+<section class="card"><h2>先预览，再授权</h2><p>预览有效期 10 分钟。订单或配置改变后必须重新预览。未知结果、禁止重试和已提交订单不可重新付款。</p>
+<p>真实模式仅支持批量生成链接。真实银行卡付款需服务器上逐订单执行 pay_order，临时输入卡片与 CVC；不支持无人值守批量真实扣款。</p>
+<form method="post">{% csrf_token %}<input name="action" value="preview" type="hidden"><label>订单号（每行一个，最多 100 个）<textarea name="orders" rows="5" required></textarea></label>
+<label>操作<select name="mode"><option value="links">仅生成付款链接（不会付款）</option>{% if mode == 'simulated' %}<option value="pay">模拟付款</option>{% endif %}</select></label>
+<label><input name="unpaid" value="yes" type="checkbox">我已核实原订单未扣款（替换还须商户提供明确证据）</label><button>生成预览</button></form></section>
+{% if preview %}<section class="card"><h2>确认预览 · {{ preview.mode_label }}</h2><p>到期：{{ preview.expires_at }}；共 {{ preview.snapshot|length }} 个订单。</p><ul>{% for row in preview.snapshot %}<li>{{ row.id }} · {{ row.status_label }} · {{ row.mode_label }} · {{ row.plan.name }} · {{ row.plan.amount_minor }} {{ row.plan.currency }} · 商户 {{ row.plan.merchant }}</li>{% endfor %}</ul>
+<form method="post">{% csrf_token %}<input name="action" value="start" type="hidden"><input name="preview" value="{{ preview.pk }}" type="hidden"><button>确认授权并排队</button></form></section>{% endif %}
+<section class="card"><h2>补单历史</h2>{% for batch in batches %}<article><h3>{{ batch.pk }}</h3><p>操作 {{ batch.preview.mode_label }} · 状态 {{ batch.status_label }} · {{ batch.created_at }}</p>
+<ul>{% for item in batch.items.all %}<li>{{ item.order.username }} · {{ item.order.pk }} · {{ item.status_label }}{% if item.replacement %} · 替换订单 {{ item.replacement.pk }}{% endif %}{% if item.replacement.payment_url %} <a href="{{ item.replacement.payment_url }}" rel="noreferrer noopener" target="_blank">打开链接</a>{% elif item.order.payment_url %} <a href="{{ item.order.payment_url }}" rel="noreferrer noopener" target="_blank">打开链接</a>{% endif %}</li>{% endfor %}</ul>
+{% if batch.status == 'scheduled' or batch.status == 'running' %}<form method="post">{% csrf_token %}<input name="action" value="stop" type="hidden"><input name="batch" value="{{ batch.pk }}" type="hidden"><button>停止后续任务</button></form>{% endif %}</article>{% empty %}<p>暂无补单记录。</p>{% endfor %}</section>{% endblock %}
