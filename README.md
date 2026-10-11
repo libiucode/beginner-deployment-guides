@@ -18,4 +18,4 @@
 
 ## 项目来源与许可
 
-第一篇项目中的部分真实接口适配参考了上游项目；原始许可保存在 [LICENSE.upstream](projects/xgift-python/LICENSE.upstream)。本仓库暂未单独声明教程和新增代码的再利用许可。
+第一篇教程及其配套项目参考了 [mizorewww/x_gift_bot](https://github.com/mizorewww/x_gift_bot)；部分真实接口适配逻辑依据上游 MIT 许可源码改写。`projects/xgift-python/` 中由本仓库作者编写的教程和代码采用 MIT 许可，详见该目录的 [LICENSE](projects/xgift-python/LICENSE)；上游版权及许可声明保存在 [LICENSE.upstream](projects/xgift-python/LICENSE.upstream)。此许可说明仅适用于第一篇项目，后续项目分别声明来源与许可。
