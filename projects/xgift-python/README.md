@@ -105,3 +105,11 @@ $env:XGIFT_ENV_FILE=(Resolve-Path -LiteralPath private\server.env).Path
 Windows 本机普通进程已验证含空格环境路径、DEBUG=False 静态资源、运营生成/移动/授权 POST 导出、浏览器兑换→worker模拟成功→刷新、正常停止与一致数据库/密钥备份。模拟成功只证明本地流程。`check --deploy` 在安全模拟配置下已无警告；本地纯 HTTP 默认设置会报告 HTTPS/cookie/HSTS 提示，应按上面的生产配置部署。
 
 **真实能力边界**：真实 worker 可创建付款链接、查询已知订单；单笔付款需要管理员即时输入、只驻留内存的 CVC 等资料，不持久化 CVC/银行验证码，不支持无人值守保存卡片付款。真实批量 pay 预览不开放，失效链接真实替换仍缺少商户明确未付款证据；不能绕过这些限制。真实只读与真实赠送付款验收需要用户提供有效配置、明确测试订单/金额及授权。本次未连接 X/商户、未付款，目标服务器服务/账户/HTTPS/外网验收仍未验证。
+
+## 项目来源与许可
+
+本教程及其配套的 Python/Django 项目在功能设计和部分真实接口适配方面参考了 [mizorewww/x_gift_bot](https://github.com/mizorewww/x_gift_bot)。其中部分 X、Stripe 适配逻辑依据上游 MIT 许可源码改写。本项目并非上游项目的官方 Python 版本。
+
+本目录中由本仓库作者编写的教程和代码采用 MIT 许可，详见 [LICENSE](LICENSE)。上游项目的版权及 MIT 许可声明保存在 [LICENSE.upstream](LICENSE.upstream)。感谢上游作者 mizorewww 公开项目和实现。
+
+上述许可说明仅适用于 `projects/xgift-python/`。本仓库中的其他项目分别声明其来源与许可。
